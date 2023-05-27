@@ -1,0 +1,3 @@
+rootProject.name = 'java-password-manager'
+include 'client'
+include 'backend'
