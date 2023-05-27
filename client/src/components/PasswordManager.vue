@@ -5,7 +5,8 @@
       <input v-model="username" type="text" placeholder="Username" class="p-3 border-2 border-black border-solid" />
       <input v-model="password" type="text" placeholder="Passwort" class="p-3 border-2 border-black border-solid" />
       <button @click.prevent="register" type="button" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Registrieren</button>
-		  <button type="button" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Anmelden</button>
+		  <button @click.prevent="login" type="button" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Anmelden</button>
+      <div class="break-words text-xs">{{ token }}</div>
     </div>
   </div>
 </template>
@@ -16,6 +17,7 @@ import axios from "axios";
 
 const username = ref('noel');
 const password = ref('12345678');
+const token = ref('');
 
 const register = async () => {
 	const saltBuffer = new Uint8Array(16);
@@ -46,12 +48,22 @@ const register = async () => {
 
 	console.log(username, hashedPasswordHex);
 
-	const response = await axios.post("http://localhost:8080/v1.0/authentication/register", {
+	const response = await axios.post("http://localhost:8080/authentication/register", {
     username: username.value,
     hashedPassword: hashedPasswordHex,
     salt: salt
   });
+};
 
-	console.log(response);
+const login = async () => {
+	console.log("PERFORM LOGIN");
+	const response = await axios.post("http://localhost:8080/authentication/token", {}, {
+	  auth: {
+		  username: username.value,
+		  password: password.value
+	  }
+  });
+
+	token.value = response.data;
 };
 </script>
