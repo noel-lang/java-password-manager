@@ -22,11 +22,10 @@ public class AuthenticationController {
 
 	@PostMapping(value = "/register")
 	public ResponseEntity<?> register(@RequestBody @Valid UserSignupRequestDto userSignupRequestDto) {
-		userRepository.findByUsername(userSignupRequestDto.username())
-			.ifPresent((user) -> {
-				throw new RuntimeException("Dieser Nutzer existiert bereits.");
-			});
-
+		userRepository.findByUsername(userSignupRequestDto.username()).ifPresent((user) -> {
+			throw new RuntimeException("Dieser Nutzer existiert bereits.");
+		});
+		
 		User user = new User();
 
 		user.setUsername(userSignupRequestDto.username());
