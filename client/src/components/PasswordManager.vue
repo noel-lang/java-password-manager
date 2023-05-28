@@ -44,18 +44,21 @@ const hashPassword = async (masterPasswordKey, salt) => {
   );
 };
 
-const hashedPasswordArrayBufferToHex = (arrayBuffer) => {
+const arrayBufferToHex = (arrayBuffer) => {
   return Array.from(new Uint8Array(arrayBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-const register = async () => {
-	const saltBuffer = new Uint8Array(16);
-	window.crypto.getRandomValues(saltBuffer);
-  const salt = Array.from(saltBuffer).map(b => b.toString(16).padStart(2, '0')).join('');
+const generateRandomBuffer = () => {
+  const buffer = new Uint8Array(16);
+  window.crypto.getRandomValues(buffer);
+  return buffer;
+};
 
+const register = async () => {
+  const salt = arrayBufferToHex(generateRandomBuffer());
   const masterPasswordKey = await generateMasterPasswordKey();
 	const hashedPassword = await hashPassword(masterPasswordKey, salt);
-	const hashedPasswordHex = hashedPasswordArrayBufferToHex(hashedPassword);
+	const hashedPasswordHex = arrayBufferToHex(hashedPassword);
 
 	const response = await axios.post("http://localhost:8080/authentication/register", {
     username: username.value,
@@ -72,7 +75,7 @@ const login = async () => {
   // 2. Hash Password
   const masterPasswordKey = await generateMasterPasswordKey();
   const hashedPassword = await hashPassword(masterPasswordKey, salt);
-  const hashedPasswordHex = hashedPasswordArrayBufferToHex(hashedPassword);
+  const hashedPasswordHex = arrayBufferToHex(hashedPassword);
 
   // 3. Perform Login
 	const response = await axios.post("http://localhost:8080/authentication/token", {}, {
