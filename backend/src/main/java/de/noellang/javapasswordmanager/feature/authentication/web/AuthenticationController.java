@@ -42,9 +42,6 @@ public class AuthenticationController {
 	@GetMapping(value = "/{username}/salt")
 	public ResponseEntity<UserSaltResponseDto> retrieveSalt(@PathVariable("username") String username) {
 		User user = userRepository.findByUsername(username).orElseThrow(RuntimeException::new);
-
-		LOG.info("Retrieve Salt: {}", user.getSalt());
-
 		return ResponseEntity.ok(new UserSaltResponseDto(user.getSalt()));
 	}
 
