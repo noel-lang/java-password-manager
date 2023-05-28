@@ -9,10 +9,8 @@ public record UserSignupRequestDto(
 		String username,
 
 		@NotNull
-		@Size(min = 1, max = 100)
 		String hashedPassword,
 
 		@NotNull
-		@Size(min = 1, max = 100)
 		String salt
 ) {}

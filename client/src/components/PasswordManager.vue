@@ -20,11 +20,16 @@ const password = ref('12345678');
 const token = ref('');
 
 const register = async () => {
+  console.log("REGISTER");
+
 	const saltBuffer = new Uint8Array(16);
 	window.crypto.getRandomValues(saltBuffer);
-	const salt = Array.from(saltBuffer).map(b => b.toString(16).padStart(2, '0')).join('');
+  const salt = Array.from(saltBuffer).map(b => b.toString(16).padStart(2, '0')).join('');
 
 	const encoder = new TextEncoder();
+
+  console.log("REGISTER, salt: ", salt);
+
 	const masterPasswordKey = await window.crypto.subtle.importKey(
 		'raw',
 		encoder.encode(password.value),
@@ -32,6 +37,10 @@ const register = async () => {
 		false,
 		['deriveBits', 'deriveKey']
 	);
+
+  console.log("MASTER PASSWORD KEY: ", masterPasswordKey);
+
+  console.log("HASHING PASSWORD USING SALT", salt, encoder.encode(salt));
 
 	const hashedPassword = await window.crypto.subtle.deriveBits(
 		{
@@ -44,9 +53,11 @@ const register = async () => {
 		256
 	);
 
+  console.log("HASHED PASSWORD", hashedPassword);
+
 	const hashedPasswordHex = Array.from(new Uint8Array(hashedPassword)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-	console.log(username, hashedPasswordHex);
+	console.log("HASHED PASSWORD HEX", hashedPasswordHex);
 
 	const response = await axios.post("http://localhost:8080/authentication/register", {
     username: username.value,
@@ -56,11 +67,49 @@ const register = async () => {
 };
 
 const login = async () => {
-	console.log("PERFORM LOGIN");
+  console.log("LOGIN");
+  const encoder = new TextEncoder();
+
+	// 1. Retrieve Salt
+  const saltResponse = await axios.get(`http://localhost:8080/authentication/${username.value}/salt`);
+  const salt = saltResponse.data.salt;
+
+  console.log("SALT", salt);
+
+  // 2. Hash Password
+  const masterPasswordKey = await window.crypto.subtle.importKey(
+      'raw',
+      encoder.encode(password.value),
+      {name: 'PBKDF2'},
+      false,
+      ['deriveBits', 'deriveKey']
+  );
+
+  console.log("MASTER PASSWORD KEY", masterPasswordKey);
+
+  console.log("HASHING PASSWORD USING SALT", salt, encoder.encode(salt));
+
+  const hashedPassword = await window.crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: encoder.encode(salt),
+        iterations: 1000,
+        hash: 'SHA-256'
+      },
+      masterPasswordKey,
+      256
+  );
+
+  console.log("HASHED PASSWORD", hashedPassword);
+
+  const hashedPasswordHex = Array.from(new Uint8Array(hashedPassword)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  console.log("HASHED PASSWORD HEX", hashedPasswordHex);
+
 	const response = await axios.post("http://localhost:8080/authentication/token", {}, {
 	  auth: {
 		  username: username.value,
-		  password: password.value
+		  password: hashedPasswordHex
 	  }
   });
 
