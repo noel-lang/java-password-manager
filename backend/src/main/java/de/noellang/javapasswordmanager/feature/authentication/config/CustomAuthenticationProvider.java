@@ -32,10 +32,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         User user = userRepository.findByUsername(username).orElseThrow(RuntimeException::new);
         String hashedPasswordFromDatabase = user.getHashedPassword();
 
-        LOG.info("Username: {}", username);
-        LOG.info("Hashed Password from User: {}", hashedPasswordFromUser);
-        LOG.info("Hashed Password from Database: {}", hashedPasswordFromDatabase);
-
         if (hashedPasswordFromUser.equals(hashedPasswordFromDatabase)) {
             return new UsernamePasswordAuthenticationToken(username, hashedPasswordFromDatabase, new ArrayList<>());
         }

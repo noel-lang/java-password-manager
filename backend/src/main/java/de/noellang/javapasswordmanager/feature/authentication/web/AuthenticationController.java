@@ -28,10 +28,6 @@ public class AuthenticationController {
 			throw new RuntimeException("Dieser Nutzer existiert bereits.");
 		});
 
-		LOG.info("Register, Username: {}", userSignupRequestDto.username());
-		LOG.info("Register, Hashed Password: {}", userSignupRequestDto.hashedPassword());
-		LOG.info("Register, Salt: {}", userSignupRequestDto.salt());
-
 		User user = new User();
 
 		user.setUsername(userSignupRequestDto.username());
