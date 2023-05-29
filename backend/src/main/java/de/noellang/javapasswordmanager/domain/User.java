@@ -1,7 +1,6 @@
 package de.noellang.javapasswordmanager.domain;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,26 +11,29 @@ public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long internalId;
+	private Long id;
 
 	@Column(updatable = false, nullable = false, unique = true)
 	private UUID publicId = UUID.randomUUID();
 
+	@Column(nullable = false, unique = true)
 	private String username;
 
+	@Column(nullable = false)
 	private String hashedPassword;
 
+	@Column(nullable = false)
 	private String salt;
 
 	@OneToMany(mappedBy = "user")
 	private List<Password> passwords = new ArrayList<>();
 
-	public Long getInternalId() {
-		return internalId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setInternalId(Long internalId) {
-		this.internalId = internalId;
+	public void setId(Long internalId) {
+		this.id = internalId;
 	}
 
 	public UUID getPublicId() {
@@ -65,4 +67,13 @@ public class User {
 	public void setSalt(String salt) {
 		this.salt = salt;
 	}
+
+	public List<Password> getPasswords() {
+		return passwords;
+	}
+
+	public void setPasswords(List<Password> passwords) {
+		this.passwords = passwords;
+	}
+	
 }
