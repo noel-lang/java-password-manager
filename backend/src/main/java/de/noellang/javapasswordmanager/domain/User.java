@@ -3,6 +3,8 @@ package de.noellang.javapasswordmanager.domain;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,6 +22,9 @@ public class User {
 	private String hashedPassword;
 
 	private String salt;
+
+	@OneToMany(mappedBy = "user")
+	private List<Password> passwords = new ArrayList<>();
 
 	public Long getInternalId() {
 		return internalId;

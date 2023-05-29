@@ -1,5 +1,5 @@
 <template>
-  <div class="p-12 grid grid-cols-4 gap-6">
+  <div class="p-12 grid grid-cols-3 gap-12">
 	  <div class="flex flex-col space-y-6">
       <h2 class="text-3xl font-bold">Authentifizierung</h2>
       <input v-model="username" type="text" placeholder="Username" class="p-3 border-2 border-black border-solid" />
@@ -8,12 +8,17 @@
 		  <button @click.prevent="login" type="button" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Anmelden</button>
       <div class="break-words text-xs">{{ token }}</div>
     </div>
+    <div>
+      <h2 class="text-3xl font-bold mb-6">Neues Passwort anlegen</h2>
+      <CreatePassword :master-password="password" @submit="onPasswordSave" />
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from "vue";
 import axios from "axios";
+import CreatePassword from "@/components/CreatePassword.vue";
 
 const encoder = new TextEncoder();
 
@@ -87,4 +92,17 @@ const login = async () => {
 
 	token.value = response.data;
 };
+
+const onPasswordSave = async (data) => {
+  const response = await axios.post("http://localhost:8080/passwords", {
+    data: arrayBufferToHex(data.cipherText),
+    nonce: arrayBufferToHex(data.nonce)
+  }, {
+    headers: {
+      "Authorization": `Bearer ${token.value}`
+    }
+  });
+
+  console.log(response);
+}
 </script>
