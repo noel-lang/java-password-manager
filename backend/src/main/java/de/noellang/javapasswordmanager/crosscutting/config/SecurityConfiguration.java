@@ -6,9 +6,12 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import de.noellang.javapasswordmanager.feature.authentication.config.CustomAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -33,11 +36,15 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
+	private final CustomAuthenticationProvider customAuthenticationProvider;
 	@Value("${jwt.public.key}")
 	RSAPublicKey rsaPublicKey;
-
 	@Value("${jwt.private.key}")
 	RSAPrivateKey rsaPrivateKey;
+
+	public SecurityConfiguration(CustomAuthenticationProvider customAuthenticationProvider) {
+		this.customAuthenticationProvider = customAuthenticationProvider;
+	}
 
 	@Bean
 	public SecurityFilterChain web(HttpSecurity http) throws Exception {
@@ -45,13 +52,13 @@ public class SecurityConfiguration {
 		http
 				.authorizeHttpRequests((authorize) -> authorize
 					.requestMatchers("/authentication/**").permitAll()
+					.requestMatchers("/v3/api-docs*/**", "/swagger-ui*/**").permitAll()
 					.anyRequest().authenticated()
 				)
-				.httpBasic(Customizer.withDefaults())
 				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.cors(Customizer.withDefaults())
-				.csrf((csrf) -> csrf.ignoringRequestMatchers("/authentication/**"))
+				.csrf((csrf) -> csrf.ignoringRequestMatchers("/authentication/**", "/v3/api-docs"))
 				.exceptionHandling((exceptions) -> exceptions
 					.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
 					.accessDeniedHandler(new BearerTokenAccessDeniedHandler())
@@ -64,7 +71,7 @@ public class SecurityConfiguration {
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-		configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","PATCH","DELETE"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
@@ -81,6 +88,11 @@ public class SecurityConfiguration {
 		JWK jwk = new RSAKey.Builder(this.rsaPublicKey).privateKey(rsaPrivateKey).build();
 		JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
 		return new NimbusJwtEncoder(jwks);
+	}
+
+	@Bean
+	public AuthenticationManager authenticationManager() {
+		return new ProviderManager(customAuthenticationProvider);
 	}
 
 }

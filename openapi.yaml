@@ -1,0 +1,122 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /passwords:
+    post:
+      tags:
+      - password-controller
+      operationId: save
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordSaveRequestDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /authentication/token:
+    post:
+      tags:
+      - token-controller
+      operationId: token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequestDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+  /authentication/register:
+    post:
+      tags:
+      - authentication-controller
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignupRequestDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /authentication/{username}/salt:
+    get:
+      tags:
+      - authentication-controller
+      operationId: retrieveSalt
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserSaltResponseDto'
+components:
+  schemas:
+    PasswordSaveRequestDto:
+      required:
+      - data
+      - nonce
+      type: object
+      properties:
+        nonce:
+          type: string
+        data:
+          type: string
+    UserLoginRequestDto:
+      required:
+      - hashedPassword
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+        hashedPassword:
+          type: string
+    UserSignupRequestDto:
+      required:
+      - hashedPassword
+      - salt
+      - username
+      type: object
+      properties:
+        username:
+          maxLength: 100
+          minLength: 1
+          type: string
+        hashedPassword:
+          type: string
+        salt:
+          type: string
+    UserSaltResponseDto:
+      type: object
+      properties:
+        salt:
+          type: string

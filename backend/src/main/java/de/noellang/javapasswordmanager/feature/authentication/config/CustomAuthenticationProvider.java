@@ -16,31 +16,31 @@ import java.util.ArrayList;
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CustomAuthenticationProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CustomAuthenticationProvider.class);
 
-    private final UserRepository userRepository;
+	private final UserRepository userRepository;
 
-    public CustomAuthenticationProvider(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+	public CustomAuthenticationProvider(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
 
-    @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String username = authentication.getName();
-        String hashedPasswordFromUser = authentication.getCredentials().toString();
+	@Override
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+		String username = authentication.getName();
+		String hashedPasswordFromUser = authentication.getCredentials().toString();
 
-        User user = userRepository.findByUsername(username).orElseThrow(RuntimeException::new);
-        String hashedPasswordFromDatabase = user.getHashedPassword();
+		User user = userRepository.findByUsername(username).orElseThrow(RuntimeException::new);
+		String hashedPasswordFromDatabase = user.getHashedPassword();
 
-        if (hashedPasswordFromUser.equals(hashedPasswordFromDatabase)) {
-            return new UsernamePasswordAuthenticationToken(username, hashedPasswordFromDatabase, new ArrayList<>());
-        }
+		if (hashedPasswordFromUser.equals(hashedPasswordFromDatabase)) {
+			return new UsernamePasswordAuthenticationToken(username, hashedPasswordFromDatabase, new ArrayList<>());
+		}
 
-        throw new BadCredentialsException("Authentication failed");
-    }
+		throw new BadCredentialsException("Authentication failed");
+	}
 
-    @Override
-    public boolean supports(Class<?> authentication) {
-        return authentication.equals(UsernamePasswordAuthenticationToken.class);
-    }
+	@Override
+	public boolean supports(Class<?> authentication) {
+		return authentication.equals(UsernamePasswordAuthenticationToken.class);
+	}
 }

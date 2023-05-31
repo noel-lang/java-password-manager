@@ -1,7 +1,5 @@
-<script setup lang="ts">
-import PasswordManager from "@/components/PasswordManager.vue";
-</script>
+<script lang="ts" setup></script>
 
 <template>
-	<PasswordManager />
+  <router-view />
 </template>
