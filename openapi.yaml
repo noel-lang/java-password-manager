@@ -7,6 +7,19 @@ servers:
   description: Generated server url
 paths:
   /passwords:
+    get:
+      tags:
+      - password-controller
+      operationId: index
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PasswordDto'
     post:
       tags:
       - password-controller
@@ -114,6 +127,16 @@ components:
         hashedPassword:
           type: string
         salt:
+          type: string
+    PasswordDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        data:
+          type: string
+        nonce:
           type: string
     UserSaltResponseDto:
       type: object

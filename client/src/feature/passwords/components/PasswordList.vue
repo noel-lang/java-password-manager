@@ -1,32 +1,35 @@
 <template>
   <ul class="divide-y divide-gray-100" role="list">
-    <li v-for="item in activityItems" :key="item.commit" class="py-4" @click="click">
+    <li
+      v-for="password in passwords"
+      :key="password.id"
+      class="py-4 hover:cursor-pointer"
+      @click="click(password.id!)"
+    >
       <div class="flex items-center gap-x-3">
-        <img :src="item.user.imageUrl" alt="" class="h-6 w-6 flex-none rounded-full bg-gray-800" />
         <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900">
-          {{ item.user.name }}
+          {{ password.id }}
         </h3>
-        <time :datetime="item.dateTime" class="flex-none text-xs text-gray-500"
-          >{{ item.date }}
-        </time>
       </div>
-      <p class="mt-3 truncate text-sm text-gray-500">
-        Pushed to <span class="text-gray-700">{{ item.projectName }}</span> (<span
-          class="font-mono text-gray-700"
-          >{{ item.commit }}</span
-        >
-        on <span class="text-gray-700">{{ item.branch }}</span
-        >)
-      </p>
     </li>
   </ul>
 </template>
 
 <script lang="ts" setup>
+import type { PasswordDto } from '@api/api'
+
 const emit = defineEmits(['click'])
 
-const click = () => {
-  emit('click', { id: 1 })
+const props = defineProps({
+  passwords: {
+    type: Array as () => PasswordDto[],
+    required: true,
+    default: () => []
+  }
+})
+
+const click = (uuid: string) => {
+  emit('click', { uuid })
 }
 
 const activityItems = [

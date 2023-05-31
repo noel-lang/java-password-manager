@@ -2,47 +2,54 @@ package de.noellang.javapasswordmanager.feature.passwords.web;
 
 
 import de.noellang.javapasswordmanager.domain.Password;
+import de.noellang.javapasswordmanager.domain.User;
 import de.noellang.javapasswordmanager.feature.authentication.repository.UserRepository;
 import de.noellang.javapasswordmanager.feature.passwords.repository.PasswordRepository;
+import de.noellang.javapasswordmanager.feature.passwords.web.dto.PasswordDto;
 import de.noellang.javapasswordmanager.feature.passwords.web.dto.PasswordSaveRequestDto;
-import jakarta.persistence.Entity;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/passwords")
 public class PasswordController {
 
-    private final UserRepository userRepository;
+	private final UserRepository userRepository;
 
-    private final PasswordRepository passwordRepository;
+	private final PasswordRepository passwordRepository;
 
-    public PasswordController(UserRepository userRepository, PasswordRepository passwordRepository) {
-        this.userRepository = userRepository;
-        this.passwordRepository = passwordRepository;
-    }
+	public PasswordController(UserRepository userRepository, PasswordRepository passwordRepository) {
+		this.userRepository = userRepository;
+		this.passwordRepository = passwordRepository;
+	}
 
-    @PostMapping
-    public ResponseEntity<?> save(@RequestBody @Valid PasswordSaveRequestDto passwordSaveRequestDto, Authentication authentication) {
-        de.noellang.javapasswordmanager.domain.User savedUser = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(RuntimeException::new);
+	@GetMapping
+	public ResponseEntity<List<PasswordDto>> index(Authentication authentication) {
+		User user = userRepository.findByUsername(authentication.getName()).orElseThrow(RuntimeException::new);
 
-        Password password = new Password();
+		List<PasswordDto> passwordDtoList = passwordRepository.findAllByUser(user).stream()
+			.map(password -> new PasswordDto(password.getPublicId(), password.getData(), password.getNonce())).toList();
 
-        password.setUser(savedUser);
-        password.setNonce(passwordSaveRequestDto.nonce());
-        password.setData(passwordSaveRequestDto.data());
+		return ResponseEntity.ok(passwordDtoList);
+	}
 
-        Password savedPassword = passwordRepository.save(password);
+	@PostMapping
+	public ResponseEntity<?> save(@RequestBody @Valid PasswordSaveRequestDto passwordSaveRequestDto, Authentication authentication) {
+		User user = userRepository.findByUsername(authentication.getName()).orElseThrow(RuntimeException::new);
 
-        return ResponseEntity.ok(savedPassword);
-    }
+		Password password = new Password();
+
+		password.setUser(user);
+		password.setNonce(passwordSaveRequestDto.nonce());
+		password.setData(passwordSaveRequestDto.data());
+
+		Password savedPassword = passwordRepository.save(password);
+
+		return ResponseEntity.ok(savedPassword);
+	}
 
 }
