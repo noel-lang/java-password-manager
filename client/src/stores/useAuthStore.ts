@@ -52,10 +52,10 @@ export const useAuthStore = defineStore('auth', {
 
       const tokenService = new TokenControllerApi()
 
-      tokenService.token({ username, hashedPassword: hashedPasswordHex }).then((response) => {
-        this.authenticated = true
-        this.token = response.data
-      })
+      const response = await tokenService.token({ username, hashedPassword: hashedPasswordHex })
+
+      this.authenticated = true
+      this.token = response.data
     }
   }
 })
